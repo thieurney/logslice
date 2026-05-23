@@ -24,6 +24,9 @@ class TestFormatLine:
     def test_no_newline_unchanged(self):
         assert format_line("abc") == "abc"
 
+    def test_prefix_with_no_strip(self):
+        assert format_line("hello\n", prefix="# ", strip=False) == "# hello\n"
+
 
 class TestWriteLines:
     def _buf(self) -> io.StringIO:
@@ -55,6 +58,12 @@ class TestWriteLines:
         assert count == 0
         assert buf.getvalue() == ""
 
+    def test_single_line(self):
+        buf = self._buf()
+        count = write_lines(["only\n"], dest=buf)
+        assert count == 1
+        assert buf.getvalue() == "only\n"
+
 
 class TestWriteSummary:
     def test_default_label(self):
@@ -71,3 +80,8 @@ class TestWriteSummary:
         buf = io.StringIO()
         write_summary(0, dest=buf)
         assert buf.getvalue() == "0 lines matched\n"
+
+    def test_large_count(self):
+        buf = io.StringIO()
+        write_summary(1_000_000, dest=buf)
+        assert buf.getvalue() == "1000000 lines matched\n"
